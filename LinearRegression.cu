@@ -5,21 +5,43 @@
 
 // Kernel to calculate coefficients
 __global__ void calculateCoefficients(const int* x, const int* y, const int x_mean, const int y_mean, float* num, float* dem, const int n) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    extern __shared__ float cc_shared_mem[];
+    float* num_shared = cc_shared_mem;
+    float* dem_shared = cc_shared_mem + blockDim.x;
 
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int tid = threadIdx.x;
+
+    // Initialize shared memory
+    num_shared[tid] = 0.0f;
+    dem_shared[tid] = 0.0f;
+    __syncthreads();
+
+    // Calculate partial results
     if (idx < n) {
         float x_diff = x[idx] - x_mean;
         float y_diff = y[idx] - y_mean;
 
-        float partial_numerator = x_diff * y_diff;
-        float partial_denominator = x_diff * x_diff;
+        num_shared[tid] = x_diff * y_diff;
+        dem_shared[tid] = x_diff * x_diff;
+    }
+    __syncthreads();
 
-        // Atomic operations to accumulate the results
-        atomicAdd(num, partial_numerator);
-        atomicAdd(dem, partial_denominator);
+    // Block-wise reduction to sum partial results
+    for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
+        if (tid < stride) {
+            num_shared[tid] += num_shared[tid + stride];
+            dem_shared[tid] += dem_shared[tid + stride];
+        }
+        __syncthreads();
+    }
+
+    // Atomic operations to accumulate the block's result to global memory
+    if (tid == 0) {
+        atomicAdd(num, num_shared[0]);
+        atomicAdd(dem, dem_shared[0]);
     }
 }
-
 
 // Kernel to calculate partial sums of x and y
 __global__ void calculatePartialSums(const int* x, const int* y, int* x_partial_sum, int* y_partial_sum, const int n) {
@@ -179,7 +201,7 @@ int main() {
     }
 
     // Calculates coefficients kernel
-    calculateCoefficients<<<gridSize, blockSize>>>(d_x, d_y, x_mean, y_mean, d_num, d_den, N);
+    calculateCoefficients<<<gridSize, blockSize, sharedMemSize>>>(d_x, d_y, x_mean, y_mean, d_num, d_den, N);
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         printf("14CUDA error: %s\n", cudaGetErrorString(err));
