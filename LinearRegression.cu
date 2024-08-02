@@ -21,14 +21,33 @@ __global__ void calculateCoefficients(const int* x, const int* y, const int x_me
 }
 
 
-// Kernel to calculate mean of x and y
-__global__ void calculateMeans(const int* x, const int* y, int* x_mean, int* y_mean, const int n) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+// Kernel to calculate partial sums of x and y
+__global__ void calculatePartialSums(const int* x, const int* y, int* x_partial_sum, int* y_partial_sum, const int n) {
+    extern __shared__ int shared_mem[];
+    int* x_shared = shared_mem;
+    int* y_shared = shared_mem + blockDim.x;
 
-    // Use atomic operations to accumulate sums
-    if (idx < n) {
-        atomicAdd(x_mean, x[idx]);
-        atomicAdd(y_mean, y[idx]);
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int tid = threadIdx.x;
+
+    // Initialize shared memory
+    x_shared[tid] = (idx < n) ? x[idx] : 0;
+    y_shared[tid] = (idx < n) ? y[idx] : 0;
+    __syncthreads();
+
+    // Perform block-wise reduction
+    for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
+        if (tid < stride) {
+            x_shared[tid] += x_shared[tid + stride];
+            y_shared[tid] += y_shared[tid + stride];
+        }
+        __syncthreads();
+    }
+
+    // Write block's partial sum to global memory
+    if (tid == 0) {
+        atomicAdd(x_partial_sum, x_shared[0]);
+        atomicAdd(y_partial_sum, y_shared[0]);
     }
 }
 
@@ -59,9 +78,11 @@ int main() {
     int *d_x;
     int *d_y;
 
-    // Block & Grid size
+    // Block, Grid and Shared Memory size
     int blockSize = 256;
     int gridSize = (N + blockSize - 1) / blockSize;
+    int sharedMemSize = blockSize * 2 * sizeof(int);  // Shared memory size
+
 
 
     // Calculate means
@@ -109,7 +130,7 @@ int main() {
     }
 
     // Calculate means kernel
-    calculateMeans<<<gridSize, blockSize>>>(d_x, d_y, d_x_mean, d_y_mean, N);
+    calculatePartialSums<<<gridSize, blockSize, sharedMemSize>>>(d_x, d_y, d_x_mean, d_y_mean, N);
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         printf("9CUDA error: %s\n", cudaGetErrorString(err));
