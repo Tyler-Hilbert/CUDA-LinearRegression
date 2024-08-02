@@ -5,7 +5,8 @@
 #include <cuda_runtime.h>
 
 // Kernel to calculate coefficients
-__global__ void calculateCoefficients(const int* x, const int* y, const int x_mean, const int y_mean, float* num, float* dem, const int n) {
+// Calculates numerator and denominator which are then used to calculate slope and bias
+__global__ void calculatePartialCoefficients(const int* x, const int* y, const int x_mean, const int y_mean, float* num, float* dem, const int n) {
     extern __shared__ float cc_shared_mem[];
     float* num_shared = cc_shared_mem;
     float* dem_shared = cc_shared_mem + blockDim.x;
@@ -45,6 +46,7 @@ __global__ void calculateCoefficients(const int* x, const int* y, const int x_me
 }
 
 // Kernel to calculate partial sums of x and y
+// Calculates sum which is then used to calculate mean
 __global__ void calculatePartialSums(const int* x, const int* y, int* x_partial_sum, int* y_partial_sum, const int n) {
     extern __shared__ int shared_mem[];
     int* x_shared = shared_mem;
@@ -75,7 +77,8 @@ __global__ void calculatePartialSums(const int* x, const int* y, int* x_partial_
 }
 
 // Kernel to calculate the Mean Square Error (MSE)
-__global__ void calculateMSE(const int* y, const int* predictions, float* mse, int n) {
+// Calculates squared error which is then used to calculate mean squared error
+__global__ void calculatePartialMSE(const int* y, const int* predictions, float* mse, int n) {
     extern __shared__ float mse_shared_mem[];
     int tid = threadIdx.x;
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -224,7 +227,7 @@ int main() {
     }
 
     // Calculates coefficients kernel
-    calculateCoefficients<<<grid_size, block_size, shared_mem_size>>>(d_x, d_y, x_mean, y_mean, d_num, d_den, N);
+    calculatePartialCoefficients<<<grid_size, block_size, shared_mem_size>>>(d_x, d_y, x_mean, y_mean, d_num, d_den, N);
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         printf("14CUDA error: %s\n", cudaGetErrorString(err));
@@ -301,7 +304,7 @@ int main() {
         return;
     }
     // Run the kernel
-    calculateMSE<<<grid_size, block_size, shared_mem_size>>>(d_y, d_predictions, d_mse, N);
+    calculatePartialMSE<<<grid_size, block_size, shared_mem_size>>>(d_y, d_predictions, d_mse, N);
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         printf("22CUDA error (kernel launch): %s\n", cudaGetErrorString(err));
