@@ -1,5 +1,6 @@
 // Implementing linear regression from scratch in CUDA
 
+
 #include <stdio.h>
 #include <cuda_runtime.h>
 
@@ -75,10 +76,32 @@ __global__ void calculatePartialSums(const int* x, const int* y, int* x_partial_
 
 // Kernel to calculate the Mean Square Error (MSE)
 __global__ void calculateMSE(const int* y, const int* predictions, float* mse, int n) {
+    extern __shared__ float mse_shared_mem[];
+    int tid = threadIdx.x;
     int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    // Initialize shared memory
+    mse_shared_mem[tid] = 0.0f;
+    __syncthreads();
+
+    // Calculate squared difference and store in shared memory
     if (i < n) {
         int diff = y[i] - predictions[i];
-        atomicAdd(mse, diff * diff);
+        mse_shared_mem[tid] = diff * diff;
+    }
+    __syncthreads();
+
+    // Perform reduction within the block
+    for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
+        if (tid < stride) {
+            mse_shared_mem[tid] += mse_shared_mem[tid + stride];
+        }
+        __syncthreads();
+    }
+
+    // Atomic operations to accumulate the block's result to global memory
+    if (tid == 0) {
+        atomicAdd(mse, mse_shared_mem[0]);
     }
 }
 
@@ -101,9 +124,9 @@ int main() {
     int *d_y;
 
     // Block, Grid and Shared Memory size
-    int blockSize = 256;
-    int gridSize = (N + blockSize - 1) / blockSize;
-    int sharedMemSize = blockSize * 2 * sizeof(int);  // Shared memory size
+    int block_size = 256;
+    int grid_size = (N + block_size - 1) / block_size;
+    int shared_mem_size = block_size * 2 * sizeof(int);  // Shared memory size
 
 
 
@@ -152,7 +175,7 @@ int main() {
     }
 
     // Calculate means kernel
-    calculatePartialSums<<<gridSize, blockSize, sharedMemSize>>>(d_x, d_y, d_x_mean, d_y_mean, N);
+    calculatePartialSums<<<grid_size, block_size, shared_mem_size>>>(d_x, d_y, d_x_mean, d_y_mean, N);
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         printf("9CUDA error: %s\n", cudaGetErrorString(err));
@@ -201,7 +224,7 @@ int main() {
     }
 
     // Calculates coefficients kernel
-    calculateCoefficients<<<gridSize, blockSize, sharedMemSize>>>(d_x, d_y, x_mean, y_mean, d_num, d_den, N);
+    calculateCoefficients<<<grid_size, block_size, shared_mem_size>>>(d_x, d_y, x_mean, y_mean, d_num, d_den, N);
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         printf("14CUDA error: %s\n", cudaGetErrorString(err));
@@ -239,7 +262,7 @@ int main() {
     }
 
     // Run predictions kernel
-    makePredictions<<<gridSize, blockSize>>>(d_x, d_predictions, slope, bias, N);
+    makePredictions<<<grid_size, block_size>>>(d_x, d_predictions, slope, bias, N);
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         printf("18CUDA error: %s\n", cudaGetErrorString(err));
@@ -278,7 +301,7 @@ int main() {
         return;
     }
     // Run the kernel
-    calculateMSE<<<gridSize, blockSize>>>(d_y, d_predictions, d_mse, N);
+    calculateMSE<<<grid_size, block_size, shared_mem_size>>>(d_y, d_predictions, d_mse, N);
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         printf("22CUDA error (kernel launch): %s\n", cudaGetErrorString(err));
