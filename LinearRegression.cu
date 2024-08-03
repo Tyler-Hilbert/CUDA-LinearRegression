@@ -177,6 +177,25 @@ int main() {
         printf("8CUDA error: %s\n", cudaGetErrorString(err));
     }
 
+    // Setup Timer
+    float time;
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timera-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+    cudaEventCreate(&stop);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timerb-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+    cudaEventRecord(start, 0);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timerc-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+
     // Calculate means kernel
     calculatePartialSums<<<grid_size, block_size, shared_mem_size>>>(d_x, d_y, d_x_mean, d_y_mean, N);
     err = cudaGetLastError();
@@ -194,6 +213,24 @@ int main() {
     }
     x_mean = x_mean / N;
     y_mean = y_mean / N;
+
+    // End Timer
+    cudaEventRecord(stop, 0);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timerd-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+    cudaEventSynchronize(stop);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timere-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+    cudaEventElapsedTime(&time, start, stop);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timerf-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+    printf("calculatePartialSums time:  %f ms \n", time);
 
     // GPU Cleanup
     cudaFree(d_x_mean);
@@ -226,6 +263,13 @@ int main() {
         printf("13.bCUDA error: %s\n", cudaGetErrorString(err));
     }
 
+    // Setup Timer (only need to record)
+    cudaEventRecord(start, 0);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timerg-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+
     // Calculates coefficients kernel
     calculatePartialCoefficients<<<grid_size, block_size, shared_mem_size>>>(d_x, d_y, x_mean, y_mean, d_num, d_den, N);
     err = cudaGetLastError();
@@ -249,6 +293,24 @@ int main() {
     bias = y_mean - slope * x_mean;
     printf ("slope %f  bias %f\n", slope, bias);
 
+    // End Timer
+    cudaEventRecord(stop, 0);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timerh-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+    cudaEventSynchronize(stop);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timeri-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+    cudaEventElapsedTime(&time, start, stop);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timerj-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+    printf("calculatePartialCoefficients time:  %f ms \n", time);
+
     // GPU Cleanup
     cudaFree(d_num);
     cudaFree(d_den);
@@ -262,6 +324,13 @@ int main() {
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         printf("17CUDA error: %s\n", cudaGetErrorString(err));
+    }
+
+    // Setup Timer (only need to record)
+    cudaEventRecord(start, 0);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timerk-CUDA error: %s\n", cudaGetErrorString(err));
     }
 
     // Run predictions kernel
@@ -283,6 +352,24 @@ int main() {
     }
     printf ("\n");
 
+    // End Timer
+    cudaEventRecord(stop, 0);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timerl-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+    cudaEventSynchronize(stop);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timerm-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+    cudaEventElapsedTime(&time, start, stop);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timern-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+    printf("makePredictions time:  %f ms \n", time);
+
     // GPU Cleanup
     cudaFree(d_x);
 
@@ -303,6 +390,14 @@ int main() {
         printf("21CUDA error (memset): %s\n", cudaGetErrorString(err));
         return;
     }
+
+    // Setup Timer (only need to record)
+    cudaEventRecord(start, 0);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timero-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+
     // Run the kernel
     calculatePartialMSE<<<grid_size, block_size, shared_mem_size>>>(d_y, d_predictions, d_mse, N);
     err = cudaGetLastError();
@@ -320,11 +415,32 @@ int main() {
     mse = mse / (float)N;
     printf ("MSE: %f\n", mse);
 
+    // End Timer
+    cudaEventRecord(stop, 0);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timerp-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+    cudaEventSynchronize(stop);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timerq-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+    cudaEventElapsedTime(&time, start, stop);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("timerr-CUDA error: %s\n", cudaGetErrorString(err));
+    }
+    printf("calculatePartialMSE time:  %f ms \n", time);
+
+
+
     // Free GPU memory
     cudaFree(d_mse);
     cudaFree(d_predictions);
     cudaFree(d_y);
-
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
 
 
     return 0;
