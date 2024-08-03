@@ -79,32 +79,12 @@ __global__ void calculatePartialSums(const int* x, const int* y, int* x_partial_
 // Kernel to calculate the Mean Square Error (MSE)
 // Calculates squared error which is then used to calculate mean squared error
 __global__ void calculatePartialMSE(const int* y, const int* predictions, float* mse, int n) {
-    extern __shared__ float mse_shared_mem[];
-    int tid = threadIdx.x;
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-    // Initialize shared memory
-    mse_shared_mem[tid] = 0.0f;
-    __syncthreads();
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
     // Calculate squared difference and store in shared memory
-    if (i < n) {
-        int diff = y[i] - predictions[i];
-        mse_shared_mem[tid] = diff * diff;
-    }
-    __syncthreads();
-
-    // Perform reduction within the block
-    for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
-        if (tid < stride) {
-            mse_shared_mem[tid] += mse_shared_mem[tid + stride];
-        }
-        __syncthreads();
-    }
-
-    // Atomic operations to accumulate the block's result to global memory
-    if (tid == 0) {
-        atomicAdd(mse, mse_shared_mem[0]);
+    if (idx < n) {
+        int diff = y[idx] - predictions[idx];
+        mse[idx] = diff * diff;
     }
 }
 
@@ -377,17 +357,12 @@ int main() {
     // Calculate MSE
     // GPU Memory
     float* d_mse;
-    float mse;
+    float h_mse[N];
 
     // Allocate and initialize the MSE variable on the device
-    cudaMalloc((void**)&d_mse, sizeof(float));
+    cudaMalloc((void**)&d_mse, N * sizeof(float));
     if (err != cudaSuccess) {
         printf("20CUDA error (malloc): %s\n", cudaGetErrorString(err));
-        return;
-    }
-    cudaMemset(d_mse, 0.0f, sizeof(float));
-    if (err != cudaSuccess) {
-        printf("21CUDA error (memset): %s\n", cudaGetErrorString(err));
         return;
     }
 
@@ -399,20 +374,24 @@ int main() {
     }
 
     // Run the kernel
-    calculatePartialMSE<<<grid_size, block_size, shared_mem_size>>>(d_y, d_predictions, d_mse, N);
+    calculatePartialMSE<<<grid_size, block_size>>>(d_y, d_predictions, d_mse, N);
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         printf("22CUDA error (kernel launch): %s\n", cudaGetErrorString(err));
         return;
     }
     // Copy the result back to host
-    cudaMemcpy(&mse, d_mse, sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&h_mse, d_mse, N*sizeof(float), cudaMemcpyDeviceToHost);
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         printf("23CUDA error (memcpy): %s\n", cudaGetErrorString(err));
     }
     // Final MSE calculation on the host
-    mse = mse / (float)N;
+    float mse = 0;
+    for (int i = 0; i < N; i++) {
+        mse += h_mse[i];
+    }
+    mse = mse / N;
     printf ("MSE: %f\n", mse);
 
     // End Timer
