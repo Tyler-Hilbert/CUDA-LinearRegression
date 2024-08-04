@@ -1,6 +1,7 @@
 // %%writefile LinearRegression_CUDA.cu
 
 // Linear regression implemented from scratch in CUDA
+// reference (python) -- https://www.geeksforgeeks.org/linear-regression-python-implementation/
 
 #ifndef __LINEAR_REGRESSION_CUDA__
 #define __LINEAR_REGRESSION_CUDA__
@@ -8,117 +9,117 @@
 #include <cuda_runtime.h>
 #include "CUDA_helpers.cu"
 
-        // Kernel to calculate coefficients
-        // Calculates numerator and denominator which are then used to calculate slope and intercept
-        static __global__ void calculatePartialCoefficients(const float* x, const float* y, const float x_mean, const float y_mean, float* num, float* dem, const int n) {
-            extern __shared__ float cc_shared_mem[];
-            float* num_shared = cc_shared_mem;
-            float* dem_shared = cc_shared_mem + blockDim.x;
+// Kernel to calculate coefficients
+// Calculates numerator and denominator which are then used to calculate slope and intercept
+static __global__ void calculatePartialCoefficients(const float* x, const float* y, const float x_mean, const float y_mean, float* num, float* dem, const int n) {
+    extern __shared__ float cc_shared_mem[];
+    float* num_shared = cc_shared_mem;
+    float* dem_shared = cc_shared_mem + blockDim.x;
 
-            int idx = blockIdx.x * blockDim.x + threadIdx.x;
-            int tid = threadIdx.x;
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int tid = threadIdx.x;
 
-            // Initialize shared memory
-            num_shared[tid] = 0.0f;
-            dem_shared[tid] = 0.0f;
+    // Initialize shared memory
+    num_shared[tid] = 0.0f;
+    dem_shared[tid] = 0.0f;
 
-            // Calculate partial results
-            if (idx < n) {
-                float x_diff = x[idx] - x_mean;
-                float y_diff = y[idx] - y_mean;
+    // Calculate partial results
+    if (idx < n) {
+        float x_diff = x[idx] - x_mean;
+        float y_diff = y[idx] - y_mean;
 
-                num_shared[tid] = x_diff * y_diff;
-                dem_shared[tid] = x_diff * x_diff;
-            }
-            __syncthreads();
+        num_shared[tid] = x_diff * y_diff;
+        dem_shared[tid] = x_diff * x_diff;
+    }
+    __syncthreads();
 
-            // Block-wise reduction to sum partial results
-            for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
-                if (tid < stride) {
-                    num_shared[tid] += num_shared[tid + stride];
-                    dem_shared[tid] += dem_shared[tid + stride];
-                }
-                __syncthreads();
-            }
-
-            // Atomic operations to accumulate the block's result to global memory
-            if (tid == 0) {
-                atomicAdd(num, num_shared[0]);
-                atomicAdd(dem, dem_shared[0]);
-            }
+    // Block-wise reduction to sum partial results
+    for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
+        if (tid < stride) {
+            num_shared[tid] += num_shared[tid + stride];
+            dem_shared[tid] += dem_shared[tid + stride];
         }
+        __syncthreads();
+    }
 
-        // Kernel to calculate partial sums of x and y
-        // Calculates sum which is then used to calculate mean
-        static __global__ void calculatePartialSums(const float* x, const float* y, float* x_partial_sum, float* y_partial_sum, const int n) {
-            extern __shared__ float shared_mem[];
-            float* x_shared = shared_mem;
-            float* y_shared = shared_mem + blockDim.x;
+    // Atomic operations to accumulate the block's result to global memory
+    if (tid == 0) {
+        atomicAdd(num, num_shared[0]);
+        atomicAdd(dem, dem_shared[0]);
+    }
+}
 
-            int idx = blockIdx.x * blockDim.x + threadIdx.x;
-            int tid = threadIdx.x;
+// Kernel to calculate partial sums of x and y
+// Calculates sum which is then used to calculate mean
+static __global__ void calculatePartialSums(const float* x, const float* y, float* x_partial_sum, float* y_partial_sum, const int n) {
+    extern __shared__ float shared_mem[];
+    float* x_shared = shared_mem;
+    float* y_shared = shared_mem + blockDim.x;
 
-            // Initialize shared memory
-            x_shared[tid] = (idx < n) ? x[idx] : 0;
-            y_shared[tid] = (idx < n) ? y[idx] : 0;
-            __syncthreads();
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int tid = threadIdx.x;
 
-            // Perform block-wise reduction
-            for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
-                if (tid < stride) {
-                    x_shared[tid] += x_shared[tid + stride];
-                    y_shared[tid] += y_shared[tid + stride];
-                }
-                __syncthreads();
-            }
+    // Initialize shared memory
+    x_shared[tid] = (idx < n) ? x[idx] : 0;
+    y_shared[tid] = (idx < n) ? y[idx] : 0;
+    __syncthreads();
 
-            // Write block's partial sum to global memory
-            if (tid == 0) {
-                atomicAdd(x_partial_sum, x_shared[0]);
-                atomicAdd(y_partial_sum, y_shared[0]);
-            }
+    // Perform block-wise reduction
+    for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
+        if (tid < stride) {
+            x_shared[tid] += x_shared[tid + stride];
+            y_shared[tid] += y_shared[tid + stride];
         }
+        __syncthreads();
+    }
 
-        // Kernel to calculate the Mean Square Error (MSE)
-        // Calculates squared error which is then used to calculate mean squared error
-        static __global__ void calculatePartialMSE(const float* y, const float* predictions, float* mse, const int n) {
-            extern __shared__ float mse_shared_mem[];
-            int tid = threadIdx.x;
-            int i = blockIdx.x * blockDim.x + threadIdx.x;
+    // Write block's partial sum to global memory
+    if (tid == 0) {
+        atomicAdd(x_partial_sum, x_shared[0]);
+        atomicAdd(y_partial_sum, y_shared[0]);
+    }
+}
 
-            // Initialize shared memory
-            mse_shared_mem[tid] = 0.0f;
-            __syncthreads();
+// Kernel to calculate the Mean Square Error (MSE)
+// Calculates squared error which is then used to calculate mean squared error
+static __global__ void calculatePartialMSE(const float* y, const float* predictions, float* mse, const int n) {
+    extern __shared__ float mse_shared_mem[];
+    int tid = threadIdx.x;
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-            // Calculate squared difference and store in shared memory
-            if (i < n) {
-                float diff = y[i] - predictions[i];
-                mse_shared_mem[tid] = diff * diff;
-            }
-            __syncthreads();
+    // Initialize shared memory
+    mse_shared_mem[tid] = 0.0f;
+    __syncthreads();
 
-            // Perform reduction within the block
-            for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
-                if (tid < stride) {
-                    mse_shared_mem[tid] += mse_shared_mem[tid + stride];
-                }
-                __syncthreads();
-            }
+    // Calculate squared difference and store in shared memory
+    if (i < n) {
+        float diff = y[i] - predictions[i];
+        mse_shared_mem[tid] = diff * diff;
+    }
+    __syncthreads();
 
-            // Atomic operations to accumulate the block's result to global memory
-            if (tid == 0) {
-                atomicAdd(mse, mse_shared_mem[0]);
-            }
+    // Perform reduction within the block
+    for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
+        if (tid < stride) {
+            mse_shared_mem[tid] += mse_shared_mem[tid + stride];
         }
+        __syncthreads();
+    }
+
+    // Atomic operations to accumulate the block's result to global memory
+    if (tid == 0) {
+        atomicAdd(mse, mse_shared_mem[0]);
+    }
+}
 
 
-        // Uses mx+b to make predictions for dataset x
-        static __global__ void makePredictions(const float* x, float* predictions, const float slope, const float intercept, const int n) {
-            int idx = threadIdx.x + blockIdx.x * blockDim.x;
-            if (idx < n) {
-                predictions[idx] = slope * x[idx] + intercept;
-            }
-        }
+// Uses mx+b to make predictions for dataset x
+static __global__ void makePredictions(const float* x, float* predictions, const float slope, const float intercept, const int n) {
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    if (idx < n) {
+        predictions[idx] = slope * x[idx] + intercept;
+    }
+}
 
 
 class LinearRegression_CUDA {
