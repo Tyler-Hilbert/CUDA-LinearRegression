@@ -28,7 +28,6 @@ __global__ void calculatePartialCoefficients(const int* x, const int* y, const i
     // Initialize shared memory
     num_shared[tid] = 0.0f;
     dem_shared[tid] = 0.0f;
-    __syncthreads();
 
     // Calculate partial results
     if (idx < n) {
