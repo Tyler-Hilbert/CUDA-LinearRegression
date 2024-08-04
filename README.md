@@ -20,26 +20,31 @@ Calculates predictions for the array of values x based off slope and bias.
 Runtime: 0.167296 ms
 
 ## Performance Test  
-Test ran on Google Collab A100  
-nvidia-smi  
-Sat Aug  3 23:22:33 2024  
-+---------------------------------------------------------------------------------------+  
-| NVIDIA-SMI 535.104.05             Driver Version: 535.104.05   CUDA Version: 12.2     |  
-|-----------------------------------------+----------------------+----------------------+  
-| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |  
-| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |  
-|                                         |                      |               MIG M. |  
-|=========================================+======================+======================|  
-|   0  NVIDIA A100-SXM4-40GB          Off | 00000000:00:04.0 Off |                    0 |  
-| N/A   32C    P0              46W / 400W |      2MiB / 40960MiB |      0%      Default |  
-|                                         |                      |             Disabled |  
-+-----------------------------------------+----------------------+----------------------+  
+Test ran on Google Collab A100. CUDA 12.2    
 
-## Example Output  
-calculatePartialSums time:  0.279648 ms  
+### Example Output  
+Linear regression from scratch in CUDA. Dataset in .cu file  
+
+ -- calculatePartialSums time:  0.315680 ms  
+
 slope 24.999830  bias 53.343750  
-calculatePartialCoefficients time:  0.053024 ms  
-Predictions: 54293 71597 1397 17981 65429 35453 4805 31565 52493 35117 36677 96677 40181 51773 86813 10733 96989 25613 40853 77285...  
-makePredictions time:  0.167296 ms  
-MSE: 5552489.000000  
-calculatePartialMSE time:  0.038624 ms  
+
+ -- calculatePartialCoefficients time:  0.058016 ms  
+
+Predictions:  
+2260 : 54293  
+2981 : 71597  
+56 : 1397  
+747 : 17981  
+2724 : 65429  
+1475 : 35453  
+198 : 4805  
+1313 : 31565  
+2185 : 52493  
+1461 : 35117  
+
+ -- makePredictions time:  0.050976 ms  
+
+MSE: 5552492.500000  
+
+ -- calculatePartialMSE time:  0.046944 ms  
