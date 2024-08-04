@@ -1,6 +1,6 @@
 // %%writefile LinearRegression_cuBLAS.cu
 
-// Linear Regression implemented from scratch, but using cuBLAS for sum and dot product
+// Linear Regression implemented from scratch, but using cuBLAS for sums, scales and dot product
 // reference (python) -- https://www.geeksforgeeks.org/linear-regression-python-implementation/
 
 
