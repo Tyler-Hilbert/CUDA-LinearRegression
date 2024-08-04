@@ -261,10 +261,10 @@ int main() {
     // Calculate MSE
     // GPU Memory
     float* d_mse;
-    float h_mse[N];
+    float mse;
 
     // Allocate and initialize the MSE variable on the device
-    gpuErrchk( cudaMalloc((void**)&d_mse, N * sizeof(float)) );
+    gpuErrchk( cudaMalloc((void**)&d_mse, sizeof(float)) );
 
     // Setup Timer (only need to record)
     gpuErrchk( cudaEventRecord(start, 0) );
@@ -275,12 +275,8 @@ int main() {
     gpuErrchk( cudaDeviceSynchronize() );
 
     // Copy the result back to host
-    gpuErrchk( cudaMemcpy(&h_mse, d_mse, N*sizeof(float), cudaMemcpyDeviceToHost) );
+    gpuErrchk( cudaMemcpy(&mse, d_mse, sizeof(float), cudaMemcpyDeviceToHost) );
     // Final MSE calculation on the host
-    float mse = 0;
-    for (int i = 0; i < N; i++) {
-        mse += h_mse[i];
-    }
     mse = mse / N;
     printf ("MSE: %f\n\n", mse);
 
