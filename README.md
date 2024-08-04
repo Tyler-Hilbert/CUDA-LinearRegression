@@ -2,7 +2,31 @@
 `LinearRegression.cu` is kernels written completely from scratch.  
 `LinearRegression_cuBLAS.cu` is linear regression written from scratch but utilizing the cuBLAS library.  
 
-## Kernels (CUDA)  
+
+## Performance Test (cuBLAS)  
+Tested on Google Colab T4 with 820 training points and 204 testing points.  
+![cuBLAS Performance Test](https://raw.githubusercontent.com/Tyler-Hilbert/CUDA-LinearRegression/cf5575b62348c939271295fd0e2cec309fc54636/cuBLAS.png)
+
+### Example Output
+Slope: 24.999807  
+Intercept: 49.886719  
+Predictions (first 10)  
+2741.000000: 68574.359375  
+2715.000000: 67924.367188  
+913.000000: 22874.710938  
+696.000000: 17449.751953  
+67.000000: 1724.873779  
+2998.000000: 74999.312500  
+441.000000: 11074.801758  
+1077.000000: 26974.679688  
+711.000000: 17824.750000  
+3687.000000: 92224.179688  
+Mean Squared Error: 27.672958  
+constructor:    117601702 ns  
+coefficients:   1334041 ns  
+predictions:    449526 ns  
+mse:	        43622 ns
+## Kernels (Plain CUDA)  
 
 ### calculatePartialCoefficients 
 Calculates the numerator and denominator to be used for slope and bias.  
@@ -21,10 +45,10 @@ Runtime: 0.038 ms
 Calculates predictions for the array of values x based off slope and bias.  
 Runtime: 0.167 ms
 
-## Performance Test (CUDA)  
+## Performance Test (Plain CUDA)  
 Test ran on Google Collab A100. CUDA 12.2    
 
-### Example Output (CUDA)  
+### Example Output  
 Linear regression from scratch in CUDA. Dataset in .cu file  
 
  -- calculatePartialSums time:  0.315680 ms  
@@ -49,11 +73,4 @@ Predictions:
 
 MSE: 5552492.500000  
 
- -- calculatePartialMSE time:  0.046944 ms  
-
-## Performance Test (cuBLAS)  
-Tested on Google Colab T4 with 820 training points and 204 testing points  
-constructor:    117601702 ns  
-coefficients:   1334041 ns  
-predictions:    449526 ns  
-mse:	        43622 ns  
+ -- calculatePartialMSE time:  0.046944 ms    
