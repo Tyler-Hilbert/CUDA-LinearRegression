@@ -1,4 +1,6 @@
 ## Linear regression implemented from scratch in CUDA  
+`LinearRegression.cu` is kernels written completely from scratch.  
+`LinearRegression_cuBLAS.cu` is linear regression written from scratch but utilizing the cuBLAS library.  
 
 ## Kernels  
 
