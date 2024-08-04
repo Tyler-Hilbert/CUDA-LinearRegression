@@ -90,12 +90,32 @@ __global__ void calculatePartialSums(const int* x, const int* y, int* x_partial_
 // Kernel to calculate the Mean Square Error (MSE)
 // Calculates squared error which is then used to calculate mean squared error
 __global__ void calculatePartialMSE(const int* y, const int* predictions, float* mse, int n) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    extern __shared__ float mse_shared_mem[];
+    int tid = threadIdx.x;
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    // Initialize shared memory
+    mse_shared_mem[tid] = 0.0f;
+    __syncthreads();
 
     // Calculate squared difference and store in shared memory
-    if (idx < n) {
-        int diff = y[idx] - predictions[idx];
-        mse[idx] = diff * diff;
+    if (i < n) {
+        int diff = y[i] - predictions[i];
+        mse_shared_mem[tid] = diff * diff;
+    }
+    __syncthreads();
+
+    // Perform reduction within the block
+    for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
+        if (tid < stride) {
+            mse_shared_mem[tid] += mse_shared_mem[tid + stride];
+        }
+        __syncthreads();
+    }
+
+    // Atomic operations to accumulate the block's result to global memory
+    if (tid == 0) {
+        atomicAdd(mse, mse_shared_mem[0]);
     }
 }
 
@@ -250,7 +270,7 @@ int main() {
     gpuErrchk( cudaEventRecord(start, 0) );
 
     // Run the kernel
-    calculatePartialMSE<<<grid_size, block_size>>>(d_y, d_predictions, d_mse, N);
+    calculatePartialMSE<<<grid_size, block_size, shared_mem_size>>>(d_y, d_predictions, d_mse, N);
     gpuErrchk( cudaPeekAtLastError() );
     gpuErrchk( cudaDeviceSynchronize() );
 
