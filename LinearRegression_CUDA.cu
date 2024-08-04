@@ -1,5 +1,7 @@
 // %%writefile LinearRegression_CUDA.cu
 
+// Linear regression implemented from scratch in CUDA
+
 #ifndef __LINEAR_REGRESSION_CUDA__
 #define __LINEAR_REGRESSION_CUDA__
 
