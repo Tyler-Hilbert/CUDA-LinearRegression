@@ -2,7 +2,7 @@
 `LinearRegression.cu` is kernels written completely from scratch.  
 `LinearRegression_cuBLAS.cu` is linear regression written from scratch but utilizing the cuBLAS library.  
 
-## Kernels  
+## Kernels (CUDA)  
 
 ### calculatePartialCoefficients 
 Calculates the numerator and denominator to be used for slope and bias.  
@@ -21,10 +21,10 @@ Runtime: 0.038 ms
 Calculates predictions for the array of values x based off slope and bias.  
 Runtime: 0.167 ms
 
-## Performance Test  
+## Performance Test (CUDA)  
 Test ran on Google Collab A100. CUDA 12.2    
 
-### Example Output  
+### Example Output (CUDA)  
 Linear regression from scratch in CUDA. Dataset in .cu file  
 
  -- calculatePartialSums time:  0.315680 ms  
@@ -50,3 +50,10 @@ Predictions:
 MSE: 5552492.500000  
 
  -- calculatePartialMSE time:  0.046944 ms  
+
+## Performance Test (cuBLAS)  
+Tested on Google Colab T4 with 820 training points and 204 testing points  
+constructor:    117601702 ns  
+coefficients:   1334041 ns  
+predictions:    449526 ns  
+mse:	        43622 ns  
