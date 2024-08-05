@@ -2,10 +2,34 @@
 `LinearRegression_cuBLAS.cu` is linear regression written from scratch but utilizing the cuBLAS library.  
 `LinearRegression_CUDA.cu` is linear regression with kernels written completely from scratch.  
 
-
 ## cuBLAS vs CUDA Performance  
 Tested on T4 with 820 training points and 204 testing points using CUDA 12.2.  
 ![cuBLAS vs CUDA Performance Test](https://raw.githubusercontent.com/Tyler-Hilbert/CUDA-LinearRegression/8d2e2abda8d3b83918a7df89ad9eb6898b810db9/cuBLAS_vs_CUDA_Compare.png)
+
+| Task (T4 1024 Data Points) | cuBLAS Time (ms) | CUDA Time (ms) |
+|-------------------------|------------------|----------------|
+| Setting up GPU Memory   | 117.60           | 109.55         |
+| Calculating Coefficients| 1.33             | 0.41           |
+| Making Predictions      | 0.45             | 0.09           |
+| Calculating MSE         | 0.04             | 0.05           |
+
+### Observations
+
+- **Setting up GPU Memory** is slightly faster with CUDA, saving about 8 ms.
+- **Calculating Coefficients** is significantly faster with CUDA, achieving the task in about 0.41 ms compared to 1.33 ms with cuBLAS.
+- **Making Predictions** is also more efficient with CUDA, with 0.09 ms versus 0.45 ms for cuBLAS.
+- **Calculating MSE** is slightly faster with cuBLAS, but the difference is minimal.
+
+This table shows a side-by-side comparison of the task runtimes, allowing for easy visualization of performance differences between cuBLAS and CUDA implementations on the T4 GPU. If you need further assistance or more information, feel free to ask!
+
+### Observations
+
+- **Setting up GPU Memory** is slightly faster with CUDA.
+- **Calculating Coefficients** is significantly faster with CUDA.
+- **Making Predictions** shows better performance with CUDA.
+- **Calculating MSE** is marginally faster with cuBLAS.
+
+This table provides a clear and concise comparison of how each task performs using cuBLAS versus CUDA. If there's anything else you need or any additional analysis you would like, feel free to ask!
 
 ## Performance Test (cuBLAS)  
 Tested on Google Colab T4 with 820 training points and 204 testing points using CUDA 12.2.  
