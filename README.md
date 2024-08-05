@@ -13,24 +13,6 @@ Tested on T4 with 820 training points and 204 testing points using CUDA 12.2.
 | Making Predictions      | 0.45             | 0.09           |
 | Calculating MSE         | 0.04             | 0.05           |
 
-### Observations
-
-- **Setting up GPU Memory** is slightly faster with CUDA, saving about 8 ms.
-- **Calculating Coefficients** is significantly faster with CUDA, achieving the task in about 0.41 ms compared to 1.33 ms with cuBLAS.
-- **Making Predictions** is also more efficient with CUDA, with 0.09 ms versus 0.45 ms for cuBLAS.
-- **Calculating MSE** is slightly faster with cuBLAS, but the difference is minimal.
-
-This table shows a side-by-side comparison of the task runtimes, allowing for easy visualization of performance differences between cuBLAS and CUDA implementations on the T4 GPU. If you need further assistance or more information, feel free to ask!
-
-### Observations
-
-- **Setting up GPU Memory** is slightly faster with CUDA.
-- **Calculating Coefficients** is significantly faster with CUDA.
-- **Making Predictions** shows better performance with CUDA.
-- **Calculating MSE** is marginally faster with cuBLAS.
-
-This table provides a clear and concise comparison of how each task performs using cuBLAS versus CUDA. If there's anything else you need or any additional analysis you would like, feel free to ask!
-
 ## Performance Test (cuBLAS)  
 Tested on Google Colab T4 with 820 training points and 204 testing points using CUDA 12.2.  
 ![cuBLAS Performance Test](https://raw.githubusercontent.com/Tyler-Hilbert/CUDA-LinearRegression/cf5575b62348c939271295fd0e2cec309fc54636/cuBLAS.png)
