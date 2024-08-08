@@ -15,7 +15,7 @@ Tested on T4 with 820 training points and 204 testing points using CUDA 12.2.
 
 ## Performance Test (cuBLAS)  
 Tested on Google Colab T4 with 820 training points and 204 testing points using CUDA 12.2.  
-![cuBLAS Performance Test](https://raw.githubusercontent.com/Tyler-Hilbert/CUDA-LinearRegression/cf5575b62348c939271295fd0e2cec309fc54636/cuBLAS.png)
+![cuBLAS Performance Test](https://raw.githubusercontent.com/Tyler-Hilbert/CUDA-LinearRegression/Perf/cuBLAS.png)
 
 ### Example Output
 Slope: 24.999807  
@@ -52,7 +52,7 @@ Runtime (1024 points): 0.167 ms
 
 ## Performance Test (Plain CUDA)  
 Tested on Google Colab T4 with 820 training points and 204 testing points using CUDA 12.2.  
-![CUDA Performance Test](https://raw.githubusercontent.com/Tyler-Hilbert/CUDA-LinearRegression/8d2e2abda8d3b83918a7df89ad9eb6898b810db9/CUDA.png)
+![CUDA Performance Test](https://raw.githubusercontent.com/Tyler-Hilbert/CUDA-LinearRegression/Perf/CUDA.png)
 
 ### Example Output  
 slope 24.999805  intercept 49.890625  
