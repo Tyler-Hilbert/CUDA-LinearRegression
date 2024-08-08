@@ -8,7 +8,6 @@ Tested on T4 with 820 training points and 204 testing points using CUDA 12.2.
 
 | Task (T4 1024 Data Points) | cuBLAS Time (ms) | CUDA Time (ms) |
 |-------------------------|------------------|----------------|
-| Setting up GPU Memory   | 117.60           | 109.55         |
 | Calculating Coefficients| 1.33             | 0.41           |
 | Making Predictions      | 0.45             | 0.09           |
 | Calculating MSE         | 0.04             | 0.05           |
