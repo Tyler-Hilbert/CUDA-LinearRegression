@@ -1,4 +1,7 @@
-// Linear Regression implemented from scratch, but using cuBLAS for sums, scales and dot product
+// Linear Regression implemented from scratch, but using cuBLAS.
+// cublasSaxpy
+// cublasSasum
+// cublasSdot
 // reference (python) -- https://www.geeksforgeeks.org/linear-regression-python-implementation/
 
 #ifndef __LINEAR_REGRESSION_CUBLAS__
