@@ -1,6 +1,6 @@
 // Linear Regression implemented from scratch, but using cuBLAS.
 //  calculate_coefficients: 2xcublasSasum + 2xcublasSdot
-//  make_predictions: cublasSaxpy + 2xcudaMemcpy
+//  make_predictions: cublasSaxpy
 //  calculate_mse: cublasSaxpy + cublasSdot
 
 // reference (python) -- https://www.geeksforgeeks.org/linear-regression-python-implementation/

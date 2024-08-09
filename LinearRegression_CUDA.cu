@@ -1,4 +1,8 @@
 // Linear regression implemented from scratch in CUDA
+//  calculate_coefficients: calculatePartialSums + calculatePartialCoefficients
+//  make_predictions: makePredictions
+//  calculate_mse: calculatePartialMSE
+
 // reference (python) -- https://www.geeksforgeeks.org/linear-regression-python-implementation/
 
 #ifndef __LINEAR_REGRESSION_CUDA__
