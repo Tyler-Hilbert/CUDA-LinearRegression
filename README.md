@@ -3,7 +3,7 @@
 `LinearRegression_CUDA.cu` is linear regression with kernels written completely from scratch.  
 
 ## cuBLAS vs CUDA Performance  
-Tested on T4 with 800,000 training points and 200,000 testing points using CUDA 12.2.  
+Tested on T4 with 800,000 training points and 200,000 testing points using CUDA 12.2 using Nsight.  
 ![cuBLAS vs CUDA Performance Test](https://raw.githubusercontent.com/Tyler-Hilbert/CUDA-LinearRegression/main/Perf/CUDA_vs_cuBLAS_Runtime_by_Task.png)  
 
 ### CUDA (Kernel Written from Scratch)  
