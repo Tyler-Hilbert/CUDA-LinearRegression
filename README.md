@@ -4,7 +4,7 @@
 
 ## cuBLAS vs CUDA Performance  
 Tested on T4 with 800,000 training points and 200,000 testing points using CUDA 12.2.  
-![cuBLAS vs CUDA Performance Test](https://raw.githubusercontent.com/Tyler-Hilbert/CUDA-LinearRegression/main/CUDA_vs_cuBLAS_Runtime_by_Task.png)  
+![cuBLAS vs CUDA Performance Test](https://raw.githubusercontent.com/Tyler-Hilbert/CUDA-LinearRegression/main/Perf/CUDA_vs_cuBLAS_Runtime_by_Task.png)  
 
 ### CUDA (Kernel Written from Scratch)  
 #### Table 1: CUDA 'cuda_api_sum'  
