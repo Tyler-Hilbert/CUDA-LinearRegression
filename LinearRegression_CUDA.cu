@@ -1,5 +1,3 @@
-// %%writefile LinearRegression_CUDA.cu
-
 // Linear regression implemented from scratch in CUDA
 // reference (python) -- https://www.geeksforgeeks.org/linear-regression-python-implementation/
 
@@ -133,6 +131,8 @@ class LinearRegression_CUDA {
         ) {
             // Variables on stack
             this->n = n;
+            this->train_size = train_size;
+            this->test_size = test_size;
             this->trained = false;
             this->made_predictions = false;
             this->calculated_mse = false;
@@ -142,11 +142,12 @@ class LinearRegression_CUDA {
             this->h_y = new float[n];
             memcpy(h_x, x, n * sizeof(float));
             memcpy(h_y, y, n * sizeof(float));
-            this->h_predictions = new float[n];
+            this->h_predictions = new float[test_size];
 
             // Block, Grid and Shared Memory size
             this->block_size = 256;
-            this->grid_size = (n + block_size - 1) / block_size;
+            this->grid_size_train = (train_size + block_size - 1) / block_size;
+            this->grid_size_test = (train_size + block_size - 1) / block_size;
             this->shared_mem_size = block_size * 2 * sizeof(int);
 
             // Variables on GPU
@@ -154,7 +155,7 @@ class LinearRegression_CUDA {
             CUDA_CHECK( cudaMalloc(&d_y, n * sizeof(float)) );
             CUDA_CHECK( cudaMemcpy(d_x, this->h_x, n * sizeof(float), cudaMemcpyHostToDevice) );
             CUDA_CHECK( cudaMemcpy(d_y, this->h_y, n * sizeof(float), cudaMemcpyHostToDevice) );
-            CUDA_CHECK( cudaMalloc(&d_predictions, n*sizeof(float)) );
+            CUDA_CHECK( cudaMalloc(&d_predictions, test_size * sizeof(float)) );
         }
 
         ~LinearRegression_CUDA() {
@@ -176,7 +177,7 @@ class LinearRegression_CUDA {
             CUDA_CHECK( cudaMemset(d_y_mean, 0, sizeof(float)) );
 
             // Sums Kernel
-            calculatePartialSums<<<grid_size, block_size, shared_mem_size>>>(d_x, d_y, d_x_mean, d_y_mean, n);
+            calculatePartialSums<<<grid_size_train, block_size, shared_mem_size>>>(d_x, d_y, d_x_mean, d_y_mean, train_size);
             CUDA_CHECK( cudaPeekAtLastError() );
             CUDA_CHECK( cudaDeviceSynchronize() );
 
@@ -184,8 +185,8 @@ class LinearRegression_CUDA {
             float x_mean, y_mean;
             CUDA_CHECK( cudaMemcpy(&x_mean, d_x_mean, sizeof(float), cudaMemcpyDeviceToHost) );
             CUDA_CHECK( cudaMemcpy(&y_mean, d_y_mean, sizeof(float), cudaMemcpyDeviceToHost) );
-            x_mean = x_mean / n;
-            y_mean = y_mean / n;
+            x_mean = x_mean / train_size;
+            y_mean = y_mean / train_size;
 
             // GPU cleanup
             CUDA_CHECK( cudaFree(d_x_mean) );
@@ -201,7 +202,7 @@ class LinearRegression_CUDA {
             CUDA_CHECK( cudaMemset(d_den, 0.0f, sizeof(float)) );
 
             // Calculates coefficients kernel
-            calculatePartialCoefficients<<<grid_size, block_size, shared_mem_size>>>(d_x, d_y, x_mean, y_mean, d_num, d_den, n);
+            calculatePartialCoefficients<<<grid_size_train, block_size, shared_mem_size>>>(d_x, d_y, x_mean, y_mean, d_num, d_den, train_size);
             CUDA_CHECK( cudaPeekAtLastError() );
             CUDA_CHECK( cudaDeviceSynchronize() );
 
@@ -230,15 +231,16 @@ class LinearRegression_CUDA {
             }
 
             // Run predictions kernel
-            makePredictions<<<grid_size, block_size>>>(d_x, d_predictions, slope, intercept, n);
+            float *d_x_test = d_x+train_size; // Pointer to where test data starts
+            makePredictions<<<grid_size_test, block_size>>>(d_x_test, d_predictions, slope, intercept, test_size);
             CUDA_CHECK( cudaPeekAtLastError() );
             CUDA_CHECK( cudaDeviceSynchronize() );
 
             // Copy data from GPU and print
-            CUDA_CHECK( cudaMemcpy(h_predictions, d_predictions, n*sizeof(float), cudaMemcpyDeviceToHost) );
+            CUDA_CHECK( cudaMemcpy(h_predictions, d_predictions, test_size*sizeof(float), cudaMemcpyDeviceToHost) );
             printf("Predictions (first 10)\n");
             for (int i = 0; i < 10; i++) {
-                printf ("%f : %f\n", h_x[i], h_predictions[i]);
+                printf ("%f : %f\n", h_x[i+train_size], h_predictions[i]);
             }
             printf ("\n");
         
@@ -261,13 +263,14 @@ class LinearRegression_CUDA {
             CUDA_CHECK( cudaMalloc((void**)&d_mse, sizeof(float)) );
 
             // Run the kernel to calculate SE
-            calculatePartialMSE<<<grid_size, block_size, shared_mem_size>>>(d_y, d_predictions, d_mse, n);
+            float *d_y_test = d_y + train_size; // Pointer to where test data starts
+            calculatePartialMSE<<<grid_size_test, block_size, shared_mem_size>>>(d_y_test, d_predictions, d_mse, test_size);
             CUDA_CHECK( cudaPeekAtLastError() );
             CUDA_CHECK( cudaDeviceSynchronize() );
 
             // Final MSE calculation on the host
             CUDA_CHECK( cudaMemcpy(&mse, d_mse, sizeof(float), cudaMemcpyDeviceToHost) );
-            mse = mse / n;
+            mse = mse / test_size;
             printf ("MSE: %f\n\n", mse);
 
             // Update
@@ -295,7 +298,8 @@ class LinearRegression_CUDA {
 
         // Block, Grid and Shared Memory size
         int block_size;
-        int grid_size;
+        int grid_size_train; // Grid size when using training dataset
+        int grid_size_test; // Grid size when using testing dataset
         int shared_mem_size;
 };
 #endif // __LINEAR_REGRESSION_CUDA__
