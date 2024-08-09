@@ -1,7 +1,8 @@
 // Linear Regression implemented from scratch, but using cuBLAS.
-// cublasSaxpy
-// cublasSasum
-// cublasSdot
+//  calculate_coefficients: 2xcublasSasum + 2xcublasSdot
+//  make_predictions: cublasSaxpy + 2xcudaMemcpy
+//  calculate_mse: cublasSaxpy + cublasSdot
+
 // reference (python) -- https://www.geeksforgeeks.org/linear-regression-python-implementation/
 
 #ifndef __LINEAR_REGRESSION_CUBLAS__
@@ -167,7 +168,7 @@ class LinearRegression_cuBLAS {
         float *d_predictions; // Predictions on device
 
         bool calculated_mse; // If MSE has been calculated
-        float mse;
+        float mse; // Mean squared error
 };
 
 #endif // __LINEAR_REGRESSION_CUBLAS__
