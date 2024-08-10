@@ -30,10 +30,10 @@ Tested on T4 with 800,000 training points and 200,000 testing points using CUDA 
 #### Table 2: cuBLAS 'cuda_gpu_kern_sum'  
 | Name                                                                                              | Time (%) | Total Time (ns) | Instances | Avg (ns)   | Med (ns)   | Min (ns) | Max (ns) | StdDev (ns) |  
 |---------------------------------------------------------------------------------------------------|----------|-----------------|-----------|------------|------------|----------|----------|-------------|  
-| void dot_kernel<float, (int)128, (int)0, cublasDotParams<cublasGemvTensor<const float>, cublasGemvT… | 37.7     | 53,727           | 3         | 17,909.0   | 18,239.0   | 9,216    | 26,272   | 8,532.8     |  
-| void asum_kernel<int, float, float>(cublasAsumParams<T2, T3>)                                      | 35.5     | 50,622           | 4         | 12,655.5   | 12,367.5   | 4,448    | 21,439   | 9,260.7     |  
-| void axpy_kernel_val<float, float>(cublasAxpyParamsVal<T1, T1, T2>)                                | 15.5     | 22,080           | 2         | 11,040.0   | 11,040.0   | 10,912   | 11,168   | 181.0       |  
-| void reduce_1Block_kernel<float, (int)128, (int)7, cublasGemvTensorStridedBatched<float>, cublasGemv… | 11.3     | 16,096           | 3         | 5,365.3    | 5,280.0    | 5,056    | 5,760    | 359.7       |  
+| dot_kernel           | 37.7     | 53,727           | 3         | 17,909.0   | 18,239.0   | 9,216    | 26,272   | 8,532.8     |  
+| asum_kernel          | 35.5     | 50,622           | 4         | 12,655.5   | 12,367.5   | 4,448    | 21,439   | 9,260.7     |  
+| axpy_kernel_val      | 15.5     | 22,080           | 2         | 11,040.0   | 11,040.0   | 10,912   | 11,168   | 181.0       |  
+| reduce_1Block_kernel | 11.3     | 16,096           | 3         | 5,365.3    | 5,280.0    | 5,056    | 5,760    | 359.7       |  
 
 #### Table 3: cuBLAS 'cuda_gpu_mem_time_sum'  
 | Operation                   | Time (%) | Total Time (ns) | Count | Avg (ns)   | Med (ns)   | Min (ns) | Max (ns) | StdDev (ns) |  
@@ -76,10 +76,10 @@ Mean Squared Error: 27.672958
 #### Table 5: CUDA 'cuda_gpu_kern_sum'  
 | Name                                                                                         | Time (%) | Total Time (ns) | Instances | Avg (ns)   | Med (ns)   | Min (ns) | Max (ns) | StdDev (ns) |  
 |------------------------------------------------------------------------------------------------|----------|-----------------|-----------|------------|------------|----------|----------|-------------|  
-| calculatePartialCoefficients(const float *, const float *, float, float, float *, float *, int)| 31.8     | 88,766           | 1         | 88,766.0   | 88,766.0   | 88,766   | 88,766   | 0.0         |  
-| calculatePartialSums(const float *, const float *, float *, float *, int)                      | 31.2     | 87,326           | 1         | 87,326.0   | 87,326.0   | 87,326   | 87,326   | 0.0         |  
-| calculatePartialMSE(const float *, const float *, float *, int)                                | 29.8     | 83,262           | 1         | 83,262.0   | 83,262.0   | 83,262   | 83,262   | 0.0         |  
-| makePredictions(const float *, float *, float, float, int)                                     | 7.2      | 20,128           | 1         | 20,128.0   | 20,128.0   | 20,128   | 20,128   | 0.0         |  
+| calculatePartialCoefficients    | 31.8     | 88,766           | 1         | 88,766.0   | 88,766.0   | 88,766   | 88,766   | 0.0         |  
+| calculatePartialSums            | 31.2     | 87,326           | 1         | 87,326.0   | 87,326.0   | 87,326   | 87,326   | 0.0         |  
+| calculatePartialMSE             | 29.8     | 83,262           | 1         | 83,262.0   | 83,262.0   | 83,262   | 83,262   | 0.0         |  
+| makePredictions                 | 7.2      | 20,128           | 1         | 20,128.0   | 20,128.0   | 20,128   | 20,128   | 0.0         |  
 
 #### Table 6: CUDA 'cuda_gpu_mem_time_sum'  
 | Operation                   | Time (%) | Total Time (ns) | Count | Avg (ns)   | Med (ns)   | Min (ns) | Max (ns) | StdDev (ns) |  
