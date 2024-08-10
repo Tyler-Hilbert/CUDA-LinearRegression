@@ -1,6 +1,7 @@
 # Linear regression implemented from scratch in CUDA vs cuBLAS  
 `LinearRegression_cuBLAS.cu` is linear regression written from scratch but utilizing the cuBLAS library.  
 `LinearRegression_CUDA.cu` is linear regression with kernels written completely from scratch.  
+`LinearRegression_CUDA_NoSharedMemory.cu` is linear regression with kernels written completely from scratch but without the shared memory optimizations.  
 
 # cuBLAS vs CUDA Performance  
 Tested on T4 with 800,000 training points and 200,000 testing points using CUDA 12.2 using Nsight.  
@@ -115,7 +116,8 @@ Predictions
 
 MSE: 27.675436  
 
-## Shared Memory Kernels vs No Shared Memory Kernels (CUDA)  
+## (Both CUDA): Shared Memory Kernels vs No Shared Memory Kernels  
+![CUDA Performance Test: Shared Memory Kernels vs No Shared Memory Kernels](https://raw.githubusercontent.com/Tyler-Hilbert/CUDA-LinearRegression/main/Perf/CUDA_SharedMemoryKernel_Vs_NoSharedMemoryKernel.png)  
 Table 7: CUDA Shared Memory vs No Shared Memory    
 | Kernel Name                                  | Time (%) | Total Time (ns)  | Test               |
 |----------------------------------------------|----------|------------------|-------------------|
@@ -126,4 +128,7 @@ Table 7: CUDA Shared Memory vs No Shared Memory
 | calculatePartialMSE (No Shared)              | 10.8%    | 704,785          | No Shared Memory  |
 | calculatePartialMSE (Shared)                 | 29.8%    | 83,262           | Shared Memory     |
 | makePredictions (No Shared)                  | 0.3%     | 20,256           | No Shared Memory  |
-| makePredictions (Doesn't Use Shared)         | 7.2%     | 20,128           | Shared Memory     |
+| makePredictions (Doesn't Use Shared)         | 7.2%     | 20,128           | Shared Memory     |  
+
+Note: makePredictions doesn't use shared memory in either test.  
+
