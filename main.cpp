@@ -1,9 +1,9 @@
-%%writefile PerformanceTester.cu
 // Performance tester for linear regression
 
 #include <stdio.h>
 
 #include "LinearRegression_CUDA.cu"
+//#include "LinearRegression_CUDA_NoSharedMemory.cu"
 //#include "LinearRegression_cuBLAS.cu"
 #include <chrono> // NOTE: official perf tests use Nsight not chrono
 
