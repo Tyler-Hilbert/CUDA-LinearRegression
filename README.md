@@ -9,7 +9,7 @@ Tested on T4 with 800,000 training points and 200,000 testing points using CUDA 
 
 # cuBLAS  
 #### Table 1: cuBLAS 'cuda_api_sum'  
-| Name                       | Time (%) | Total Time (ns) | Num Calls | Avg (ns)      | Med (ns)    | Min (ns) | Max (ns)     | StdDev (ns)    |  
+| Task                       | Time (%) | Total Time (ns) | Num Calls | Avg (ns)      | Med (ns)    | Min (ns) | Max (ns)     | StdDev (ns)    |  
 |----------------------------|----------|-----------------|-----------|---------------|-------------|----------|--------------|---------------|  
 | cudaMalloc                  | 67.5     | 97,130,331       | 6         | 16,188,388.5  | 114,106.0   | 9,119    | 96,736,963   | 39,460,617.3  |  
 | cudaFree                    | 28.2     | 40,578,612       | 8         | 5,072,326.5   | 169,325.0   | 3,214    | 36,343,841   | 12,693,387.7  |  
@@ -28,8 +28,8 @@ Tested on T4 with 800,000 training points and 200,000 testing points using CUDA 
 | cuModuleGetLoadingMode      | 0.0      | 1,477            | 3         | 492.3         | 334.0       | 168      | 975          | 426.2         |  
 
 #### Table 2: cuBLAS 'cuda_gpu_kern_sum'  
-| Name                                                                                              | Time (%) | Total Time (ns) | Instances | Avg (ns)   | Med (ns)   | Min (ns) | Max (ns) | StdDev (ns) |  
-|---------------------------------------------------------------------------------------------------|----------|-----------------|-----------|------------|------------|----------|----------|-------------|  
+| Kernel               | Time (%) | Total Time (ns) | Instances | Avg (ns)   | Med (ns)   | Min (ns) | Max (ns) | StdDev (ns) |  
+|----------------------|----------|-----------------|-----------|------------|------------|----------|----------|-------------|  
 | dot_kernel           | 37.7     | 53,727           | 3         | 17,909.0   | 18,239.0   | 9,216    | 26,272   | 8,532.8     |  
 | asum_kernel          | 35.5     | 50,622           | 4         | 12,655.5   | 12,367.5   | 4,448    | 21,439   | 9,260.7     |  
 | axpy_kernel_val      | 15.5     | 22,080           | 2         | 11,040.0   | 11,040.0   | 10,912   | 11,168   | 181.0       |  
@@ -63,7 +63,7 @@ Mean Squared Error: 27.672958
 
 # CUDA (Kernel Written from Scratch)  
 #### Table 4: CUDA 'cuda_api_sum'  
-| Name                   | Time (%) | Total Time (ns) | Num Calls | Avg (ns)      | Med (ns)    | Min (ns) | Max (ns)     | StdDev (ns)    |  
+| Task                   | Time (%) | Total Time (ns) | Num Calls | Avg (ns)      | Med (ns)    | Min (ns) | Max (ns)     | StdDev (ns)    |  
 |------------------------|----------|-----------------|-----------|---------------|-------------|----------|--------------|---------------|  
 | cudaMalloc              | 50.1     | 126,094,891      | 8         | 15,761,861.4  | 13,477.5    | 2,781    | 125,828,040  | 44,473,478.8  |  
 | cudaLaunchKernel        | 48.3     | 121,654,725      | 4         | 30,413,681.3  | 34,383.0    | 19,211   | 121,566,748  | 60,768,712.3  |  
@@ -74,8 +74,8 @@ Mean Squared Error: 27.672958
 | cuModuleGetLoadingMode  | 0.0      | 988              | 1         | 988.0         | 988.0       | 988      | 988          | 0.0           |  
 
 #### Table 5: CUDA 'cuda_gpu_kern_sum'  
-| Name                                                                                         | Time (%) | Total Time (ns) | Instances | Avg (ns)   | Med (ns)   | Min (ns) | Max (ns) | StdDev (ns) |  
-|------------------------------------------------------------------------------------------------|----------|-----------------|-----------|------------|------------|----------|----------|-------------|  
+| Kernel                          | Time (%) | Total Time (ns) | Instances | Avg (ns)   | Med (ns)   | Min (ns) | Max (ns) | StdDev (ns) |  
+|----- ---------------------------|----------|-----------------|-----------|------------|------------|----------|----------|-------------|  
 | calculatePartialCoefficients    | 31.8     | 88,766           | 1         | 88,766.0   | 88,766.0   | 88,766   | 88,766   | 0.0         |  
 | calculatePartialSums            | 31.2     | 87,326           | 1         | 87,326.0   | 87,326.0   | 87,326   | 87,326   | 0.0         |  
 | calculatePartialMSE             | 29.8     | 83,262           | 1         | 83,262.0   | 83,262.0   | 83,262   | 83,262   | 0.0         |  
