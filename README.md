@@ -116,3 +116,16 @@ Predictions
 ...  
 
 MSE: 27.675436  
+
+## Shared Memory Kernels vs No Shared Memory Kernels (CUDA)  
+Table 7: CUDA Shared Memory vs No Shared Memory    
+| Kernel Name                                  | Time (%) | Total Time (ns)  | Test               |
+|----------------------------------------------|----------|------------------|-------------------|
+| calculatePartialCoefficients (No Shared)     | 44.6%    | 2,905,087        | No Shared Memory  |
+| calculatePartialCoefficients (Shared)        | 31.8%    | 88,766           | Shared Memory     |
+| calculatePartialSums (No Shared)             | 44.3%    | 2,887,392        | No Shared Memory  |
+| calculatePartialSums (Shared)                | 31.2%    | 87,326           | Shared Memory     |
+| calculatePartialMSE (No Shared)              | 10.8%    | 704,785          | No Shared Memory  |
+| calculatePartialMSE (Shared)                 | 29.8%    | 83,262           | Shared Memory     |
+| makePredictions (No Shared)                  | 0.3%     | 20,256           | No Shared Memory  |
+| makePredictions (Doesn't Use Shared)         | 7.2%     | 20,128           | Shared Memory     |
