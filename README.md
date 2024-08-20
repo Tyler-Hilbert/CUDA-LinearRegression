@@ -8,6 +8,14 @@ Tested on T4 with 800,000 training points and 200,000 testing points using CUDA 
 ![cuBLAS vs CUDA Performance Test](https://raw.githubusercontent.com/Tyler-Hilbert/CUDA-LinearRegression/main/Perf/CUDA_vs_cuBLAS_Runtime_by_Task.png)  
 
 # cuBLAS  
+## Usage
+```C++
+LinearRegression_cuBLAS model(N, TRAIN_SIZE, TEST_SIZE, x, y);
+model.calculate_coefficients();
+model.make_predictions();
+model.calculate_mse();
+```
+
 #### Table 1: cuBLAS 'cuda_api_sum'  
 | Task                       | Time (%) | Total Time (ns) | Num Calls | Avg (ns)      | Med (ns)    | Min (ns) | Max (ns)     | StdDev (ns)    |  
 |----------------------------|----------|-----------------|-----------|---------------|-------------|----------|--------------|---------------|  
@@ -62,6 +70,14 @@ Predictions
 Mean Squared Error: 27.672958  
 
 # CUDA (Kernel Written from Scratch)  
+## Usage
+```C++
+LinearRegression_CUDA model(N, TRAIN_SIZE, TEST_SIZE, x, y);
+model.calculate_coefficients();
+model.make_predictions();
+model.calculate_mse();
+```
+
 #### Table 4: CUDA 'cuda_api_sum'  
 | Task                   | Time (%) | Total Time (ns) | Num Calls | Avg (ns)      | Med (ns)    | Min (ns) | Max (ns)     | StdDev (ns)    |  
 |------------------------|----------|-----------------|-----------|---------------|-------------|----------|--------------|---------------|  
