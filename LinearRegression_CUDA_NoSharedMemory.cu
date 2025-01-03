@@ -13,7 +13,7 @@
 
 // Kernel to calculate linear regression coefficients
 // Calculates numerator and denominator which are then used to calculate slope and intercept
-static __global__ void calculatePartialCoefficients(
+__global__ void calculatePartialCoefficients(
     const float* x,
     const float* y,
     const float x_mean,
@@ -35,7 +35,7 @@ static __global__ void calculatePartialCoefficients(
 
 // Kernel to calculate partial sums of x and y
 // Calculates sum which is then used to calculate mean
-static __global__ void calculatePartialSums(
+__global__ void calculatePartialSums(
     const float* x,
     const float* y,
     float* x_partial_sum,
@@ -52,7 +52,7 @@ static __global__ void calculatePartialSums(
 
 // Kernel to calculate the Mean Square Error (MSE)
 // Calculates squared error which is then used to calculate mean squared error
-static __global__ void calculatePartialMSE(
+__global__ void calculatePartialMSE(
     const float* y,
     const float* predictions,
     float* mse,
@@ -68,7 +68,7 @@ static __global__ void calculatePartialMSE(
 }
 
 // Uses mx+b to make predictions for dataset x
-static __global__ void makePredictions(
+__global__ void makePredictions(
     const float* x,
     float* predictions,
     const float slope,

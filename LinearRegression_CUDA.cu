@@ -13,7 +13,7 @@
 
 // Kernel to calculate coefficients
 // Calculates numerator and denominator which are then used to calculate slope and intercept
-static __global__ void calculatePartialCoefficients(const float* x, const float* y, const float x_mean, const float y_mean, float* num, float* dem, const int n) {
+__global__ void calculatePartialCoefficients(const float* x, const float* y, const float x_mean, const float y_mean, float* num, float* dem, const int n) {
     extern __shared__ float cc_shared_mem[];
     float* num_shared = cc_shared_mem;
     float* dem_shared = cc_shared_mem + blockDim.x;
@@ -53,7 +53,7 @@ static __global__ void calculatePartialCoefficients(const float* x, const float*
 
 // Kernel to calculate partial sums of x and y
 // Calculates sum which is then used to calculate mean
-static __global__ void calculatePartialSums(const float* x, const float* y, float* x_partial_sum, float* y_partial_sum, const int n) {
+__global__ void calculatePartialSums(const float* x, const float* y, float* x_partial_sum, float* y_partial_sum, const int n) {
     extern __shared__ float shared_mem[];
     float* x_shared = shared_mem;
     float* y_shared = shared_mem + blockDim.x;
@@ -84,7 +84,7 @@ static __global__ void calculatePartialSums(const float* x, const float* y, floa
 
 // Kernel to calculate the Mean Square Error (MSE)
 // Calculates squared error which is then used to calculate mean squared error
-static __global__ void calculatePartialMSE(const float* y, const float* predictions, float* mse, const int n) {
+__global__ void calculatePartialMSE(const float* y, const float* predictions, float* mse, const int n) {
     extern __shared__ float mse_shared_mem[];
     int tid = threadIdx.x;
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -116,7 +116,7 @@ static __global__ void calculatePartialMSE(const float* y, const float* predicti
 
 
 // Uses mx+b to make predictions for dataset x
-static __global__ void makePredictions(const float* x, float* predictions, const float slope, const float intercept, const int n) {
+__global__ void makePredictions(const float* x, float* predictions, const float slope, const float intercept, const int n) {
     int idx = threadIdx.x + blockIdx.x * blockDim.x;
     if (idx < n) {
         predictions[idx] = slope * x[idx] + intercept;
